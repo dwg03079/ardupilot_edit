@@ -98,6 +98,7 @@ public:
         float pitch_fac;
         float yaw_fac;
         uint8_t testing_order;
+        float throttle_factor;
     };
     void add_motors_raw(const struct MotorDefRaw *motors, uint8_t num_motors);
 

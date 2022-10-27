@@ -566,7 +566,7 @@ void AP_MotorsMatrix::add_motors_raw(const struct MotorDefRaw *motors, uint8_t n
 {
     for (uint8_t i=0; i<num_motors; i++) {
         const auto &m = motors[i];
-        add_motor_raw(i, m.roll_fac, m.pitch_fac, m.yaw_fac, m.testing_order);
+        add_motor_raw(i, m.roll_fac, m.pitch_fac, m.yaw_fac, m.testing_order, m.throttle_factor);
     }
 }
 #if AP_MOTORS_FRAME_QUAD_ENABLED
@@ -588,13 +588,13 @@ bool AP_MotorsMatrix::setup_quad_matrix(motor_frame_type frame_type)
     }
     case MOTOR_FRAME_TYPE_X: {
         _frame_type_string = "X";
-        static const AP_MotorsMatrix::MotorDef motors[] {
-            {   45, AP_MOTORS_MATRIX_YAW_FACTOR_CCW,  1 },
-            { -135, AP_MOTORS_MATRIX_YAW_FACTOR_CCW,  3 },
-            {  -45, AP_MOTORS_MATRIX_YAW_FACTOR_CW,   4 },
-            {  135, AP_MOTORS_MATRIX_YAW_FACTOR_CW,   2 },
+        static const AP_MotorsMatrix::MotorDefRaw motors[] {
+            {  1.00f,  0.41f,  0.00f, 1, 1.00f }, //FL
+            { -1.00f,  0.41f, -0.00f, 2, 1.00f }, //FR
+            {  0.00f, -1.00f,  0.00f, 3, 1.00f }, //BU Roll-FrontPropRollTorque
+            { -0.00f, -1.00f, -0.00f, 4, 1.00f }, //BD Roll-FrontPropRollTorque
         };
-        add_motors(motors, ARRAY_SIZE(motors));
+        add_motors_raw(motors, ARRAY_SIZE(motors));
         break;
     }
 #if APM_BUILD_TYPE(APM_BUILD_ArduPlane)
