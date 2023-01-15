@@ -790,7 +790,17 @@ bool AP_MotorsMatrix::setup_hexa_matrix(motor_frame_type frame_type)
     }
     case MOTOR_FRAME_TYPE_X: {
         _frame_type_string = "X";
-        static const AP_MotorsMatrix::MotorDef motors[] {
+        static const AP_MotorsMatrix::MotorDefRaw motors[]{
+            {  1.00f,  1.00f,  1.00f, 1, 1.00f }, //FL
+            {  0.33f,  0.00f,  0.00f, 2, 1.00f }, //CL
+            {  1.00f, -1.00f, -1.00f, 3, 1.00f }, //BL
+            { -1.00f, -1.00f,  1.00f, 4, 1.00f }, //BR
+            { -0.33f,  0.00f, -0.00f, 5, 1.00f }, //CR
+            { -1.00f,  1.00f, -1.00f, 6, 1.00f }, //FR
+        };
+        add_motors_raw(motors, ARRAY_SIZE(motors));
+        /*
+        static const AP_MotorsMatrix::MotorDef motors[]{
             {   90, AP_MOTORS_MATRIX_YAW_FACTOR_CW,   2 },
             {  -90, AP_MOTORS_MATRIX_YAW_FACTOR_CCW,  5 },
             {  -30, AP_MOTORS_MATRIX_YAW_FACTOR_CW,   6 },
@@ -799,6 +809,7 @@ bool AP_MotorsMatrix::setup_hexa_matrix(motor_frame_type frame_type)
             { -150, AP_MOTORS_MATRIX_YAW_FACTOR_CW,   4 },
         };
         add_motors(motors, ARRAY_SIZE(motors));
+        */
         break;
     }
     case MOTOR_FRAME_TYPE_H: {

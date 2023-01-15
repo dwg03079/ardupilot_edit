@@ -425,7 +425,7 @@ void AP_TECS::_update_speed_demand(void)
     // enable the maximum climb rate to be achieved and prevent continued full power descent
     // into the ground due to an unachievable airspeed value
     if ((_flags.badDescent) || (_flags.underspeed)) {
-        _TAS_dem     = _TASmin;
+        //_TAS_dem     = _TASmin;
     }
 
     // Constrain speed demand, taking into account the load factor
@@ -443,17 +443,17 @@ void AP_TECS::_update_speed_demand(void)
 
     // Apply rate limit
     if ((_TAS_dem - TAS_dem_previous) > (velRateMax * dt)) {
-        _TAS_dem_adj = TAS_dem_previous + velRateMax * dt;
+        //_TAS_dem_adj = TAS_dem_previous + velRateMax * dt;
         _TAS_rate_dem = velRateMax;
     } else if ((_TAS_dem - TAS_dem_previous) < (velRateMin * dt)) {
-        _TAS_dem_adj = TAS_dem_previous + velRateMin * dt;
+        //_TAS_dem_adj = TAS_dem_previous + velRateMin * dt;
         _TAS_rate_dem = velRateMin;
     } else {
-        _TAS_rate_dem = (_TAS_dem - TAS_dem_previous) / dt;
+        //_TAS_rate_dem = (_TAS_dem - TAS_dem_previous) / dt;
         _TAS_dem_adj = _TAS_dem;
     }
     // Constrain speed demand again to protect against bad values on initialisation.
-    _TAS_dem_adj = constrain_float(_TAS_dem_adj, _TASmin, _TASmax);
+    _TAS_dem_adj = constrain_float(_TAS_dem, _TASmin, _TASmax);
 }
 
 void AP_TECS::_update_height_demand(void)
@@ -515,9 +515,9 @@ void AP_TECS::_update_height_demand(void)
                                      !(_flight_stage == AP_Vehicle::FixedWing::FLIGHT_TAKEOFF || _flight_stage == AP_Vehicle::FixedWing::FLIGHT_ABORT_LAND);
     const bool max_descent_condition = _pitch_dem_unc < _PITCHminf || _thr_clip_status == ThrClipStatus::MIN;
     if (max_climb_condition && _hgt_dem > _hgt_dem_prev) {
-        _hgt_dem = _hgt_dem_prev;
+        //_hgt_dem = _hgt_dem_prev;
     } else if (max_descent_condition && _hgt_dem < _hgt_dem_prev) {
-        _hgt_dem = _hgt_dem_prev;
+        //_hgt_dem = _hgt_dem_prev;
     }
     _hgt_dem_prev = _hgt_dem;
 
@@ -648,7 +648,7 @@ void AP_TECS::_update_throttle_with_airspeed(void)
         float K_STE2Thr = 1 / (timeConstant() * (_STEdot_max - _STEdot_min) / (_THRmaxf - _THRminf));
 
         // Calculate feed-forward throttle
-        float ff_throttle = 0;
+        //float ff_throttle = 0;
         float nomThr = aparm.throttle_cruise * 0.01f;
         const Matrix3f &rotMat = _ahrs.get_rotation_body_to_ned();
         // Use the demanded rate of change of total energy as the feed-forward demand, but add
@@ -656,14 +656,14 @@ void AP_TECS::_update_throttle_with_airspeed(void)
         // drag increase during turns.
         float cosPhi = sqrtf((rotMat.a.y*rotMat.a.y) + (rotMat.b.y*rotMat.b.y));
         STEdot_dem = STEdot_dem + _rollComp * (1.0f/constrain_float(cosPhi * cosPhi, 0.1f, 1.0f) - 1.0f);
-        ff_throttle = nomThr + STEdot_dem / (_STEdot_max - _STEdot_min) * (_THRmaxf - _THRminf);
+        //ff_throttle = nomThr + STEdot_dem / (_STEdot_max - _STEdot_min) * (_THRmaxf - _THRminf);
 
         // Calculate PD + FF throttle
         float throttle_damp = _thrDamp;
         if (_flags.is_doing_auto_land && !is_zero(_land_throttle_damp)) {
             throttle_damp = _land_throttle_damp;
         }
-        _throttle_dem = (_STE_error + STEdot_error * throttle_damp) * K_STE2Thr + ff_throttle;
+        //_throttle_dem = (_STE_error + STEdot_error * throttle_damp) * K_STE2Thr + ff_throttle;
 
         float THRminf_clipped_to_zero = constrain_float(_THRminf, 0, _THRmaxf);
 
@@ -707,7 +707,7 @@ void AP_TECS::_update_throttle_with_airspeed(void)
         }
 
         // Sum the components.
-        _throttle_dem = _throttle_dem + _integTHR_state;
+        _throttle_dem = (_STE_error + STEdot_error * throttle_damp) * K_STE2Thr + nomThr + _integTHR_state;
     }
 
     // Constrain throttle demand and record clipping
@@ -815,7 +815,7 @@ void AP_TECS::_update_pitch(void)
         // and height is broken by the VTOL motors
         SKE_weighting = 0.0f;
     } else if ( _flags.underspeed || _flight_stage == AP_Vehicle::FixedWing::FLIGHT_TAKEOFF || _flight_stage == AP_Vehicle::FixedWing::FLIGHT_ABORT_LAND || _flags.is_gliding) {
-        SKE_weighting = 2.0f;
+        //SKE_weighting = 2.0f;
     } else if (_flags.is_doing_auto_land) {
         if (_spdWeightLand < 0) {
             // use sliding scale from normal weight down to zero at landing
@@ -834,7 +834,7 @@ void AP_TECS::_update_pitch(void)
     float SEB_dem      = _SPE_dem * SPE_weighting - _SKE_dem * SKE_weighting;
     float SEBdot_dem   = _SPEdot_dem * SPE_weighting - _SKEdot_dem * SKE_weighting;
     float SEB_error    = SEB_dem - (_SPE_est * SPE_weighting - _SKE_est * SKE_weighting);
-    float SEBdot_error = SEBdot_dem - (_SPEdot * SPE_weighting - _SKEdot * SKE_weighting);
+    float SEBdot_error = SEBdot_dem - (_SPEdot *SPE_weighting - _SKEdot * SKE_weighting);
 
     logging.SKE_error = _SKE_dem - _SKE_est;
     logging.SPE_error = _SPE_dem - _SPE_est;
