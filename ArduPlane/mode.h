@@ -52,6 +52,9 @@ public:
 #if HAL_QUADPLANE_ENABLED
         LOITER_ALT_QLAND = 25,
 #endif
+
+        AUTO3D        = 30,
+        F3A           = 31,
     };
 
     // Constructor
@@ -138,6 +141,50 @@ protected:
 #endif
 };
 
+
+
+class ModeAuto3D : public Mode
+{
+public:
+
+    Number mode_number() const override { return Number::AUTO3D; }
+    const char* name() const override { return "AUTO"; }
+    const char* name4() const override { return "AUTO"; }
+
+    bool does_automatic_thermal_switch() const override { return true; }
+
+    // methods that affect movement of the vehicle in this mode
+    void update() override;
+
+    void navigate() override;
+
+    bool allows_throttle_nudging() const override { return true; }
+
+    bool does_auto_navigation() const override;
+
+    bool does_auto_throttle() const override;
+
+protected:
+
+    bool _enter() override;
+    void _exit() override;
+};
+
+class ModeF3A : public Mode
+{
+public:
+
+    Mode::Number mode_number() const override { return Mode::Number::F3A; }
+    const char* name() const override { return "ACRO"; }
+    const char* name4() const override { return "ACRO"; }
+
+    // methods that affect movement of the vehicle in this mode
+    void update() override;
+
+protected:
+
+    bool _enter() override;
+};
 
 class ModeAcro : public Mode
 {

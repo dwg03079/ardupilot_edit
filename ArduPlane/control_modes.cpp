@@ -48,7 +48,7 @@ Mode *Plane::mode_from_mode_num(const enum Mode::Number num)
         ret = &mode_avoidADSB;
         break;
 #endif
-    // if ADSB is not compiled in then fallthrough to guided
+        // if ADSB is not compiled in then fallthrough to guided
     case Mode::Number::GUIDED:
         ret = &mode_guided;
         break;
@@ -94,6 +94,12 @@ Mode *Plane::mode_from_mode_num(const enum Mode::Number num)
         break;
 #endif  // HAL_QUADPLANE_ENABLED
 
+    case Mode::Number::AUTO3D:
+        ret = &mode_auto3d;
+        break;
+    case Mode::Number::F3A:
+        ret = &mode_f3a;
+        break;
     }
     return ret;
 }

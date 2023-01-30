@@ -89,6 +89,8 @@
 #include "quadplane.h"
 #include "tuning.h"
 
+#include <AP_Aerobatic/AP_Aerobatic.h>      //custom navigation algorithm
+
 // Configuration
 #include "config.h"
 
@@ -160,6 +162,10 @@ public:
     friend class ModeThermal;
     friend class ModeLoiterAltQLand;
 
+    //custom Flight Mode
+    friend class ModeAuto3D;
+    friend class ModeF3A;
+    
     Plane(void);
 
 private:
@@ -233,6 +239,9 @@ private:
 
     // selected navigation controller
     AP_Navigation *nav_controller = &L1_controller;
+    
+    //custom navigation
+    AP_Aerobatic nav_aerobatic;
 
     // Camera
 #if AP_CAMERA_ENABLED
@@ -284,6 +293,10 @@ private:
 #if HAL_SOARING_ENABLED
     ModeThermal mode_thermal;
 #endif
+
+    //custom Flight Mode
+    ModeAuto3D mode_auto3d;
+    ModeF3A mode_f3a;
 
     // This is the state of the flight control system
     // There are multiple states defined such as MANUAL, FBW-A, AUTO
