@@ -147,6 +147,35 @@ protected:
     AP_AHRS& ahrs;
 };
 
+class ModeAutoD : public Mode
+{
+public:
+
+    Number mode_number() const override { return Number::AUTO; }
+    const char* name() const override { return "AUTO"; }
+    const char* name4() const override { return "AUTO"; }
+
+    bool does_automatic_thermal_switch() const override { return true; }
+
+    // methods that affect movement of the vehicle in this mode
+    void update() override;
+
+    void navigate() override;
+
+    bool allows_throttle_nudging() const override { return true; }
+
+    bool does_auto_navigation() const override;
+
+    bool does_auto_throttle() const override;
+
+    bool mode_allows_autotuning() const override { return true; }
+
+protected:
+
+    bool _enter() override;
+    void _exit() override;
+    bool _pre_arm_checks(size_t buflen, char* buffer) const override;
+};
 
 class ModeAcro : public Mode
 {
