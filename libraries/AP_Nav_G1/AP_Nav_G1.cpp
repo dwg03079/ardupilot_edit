@@ -1,5 +1,6 @@
 #include <AP_HAL/AP_HAL.h>
 #include "AP_Nav_G1.h"
+#include <AP_Logger/AP_Logger.h>
 
 extern const AP_HAL::HAL& hal;
 
@@ -78,6 +79,14 @@ int32_t AP_Nav_G1::get_yaw_sensor() const
  */
 int32_t AP_Nav_G1::nav_roll_cd(void) const
 {
+    uint32_t now = AP_HAL::micros();
+    AP::logger().WriteStreaming("G1", "TimeUS,h",
+        "sm",
+        "F0",
+        "Qf",
+        now,
+        (double)_latAccDem);
+
     float ret;
     ret = cosf(_ahrs.pitch) * degrees(atanf(_latAccDem * (1.0f / GRAVITY_MSS)) * 100.0f);
     ret = constrain_float(ret, -9000, 9000);

@@ -76,6 +76,8 @@ public:
         _reverse = reverse;
     }
 
+    //void logging(void);
+
 private:
     // reference to the AHRS object
     AP_AHRS& _ahrs;
