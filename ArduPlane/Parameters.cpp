@@ -893,6 +893,11 @@ const AP_Param::Info Plane::var_info[] = {
     // @Path: ../libraries/AP_L1_Control/AP_L1_Control.cpp
     GOBJECT(L1_controller,         "NAVL1_",   AP_L1_Control),
 
+
+    // @Group: NAVG1_
+    // @Path: ../libraries/AP_Nav_G1/AP_Nav_G1.cpp
+    GOBJECT(G1_controller, "NAVG1_", AP_Nav_G1),
+
     // @Group: TECS_
     // @Path: ../libraries/AP_TECS/AP_TECS.cpp
     GOBJECT(TECS_controller,         "TECS_",   AP_TECS),
