@@ -429,6 +429,21 @@ bool RC_Channel_Plane::do_aux_function(const aux_func_t ch_option, const AuxSwit
         }
         break;
 
+    case AUX_FUNC::NAV_CONTROLLER_SELECT:
+        switch (ch_flag) {
+        case AuxSwitchPos::HIGH:
+            plane.nav_controller = &plane.G1_controller;
+            GCS_SEND_TEXT(MAV_SEVERITY_INFO, "Navigation G1");
+            break;
+        case AuxSwitchPos::MIDDLE:
+            break;
+        case AuxSwitchPos::LOW:
+            plane.nav_controller = &plane.L1_controller;
+            GCS_SEND_TEXT(MAV_SEVERITY_INFO, "Navigation L1");
+            break;
+        }
+        break;
+
     default:
         return RC_Channel::do_aux_function(ch_option, ch_flag);
     }
