@@ -764,20 +764,20 @@ bool AP_Mission::read_cmd_from_storage(uint16_t index, Mission_Command& cmd) con
     // Find out proper location in memory by using the start_byte position + the index
     // we can load a command, we don't process it yet
     // read WP position
-    const uint16_t pos_in_storage = 4 + (index * AP_MISSION_EEPROM_COMMAND_SIZE);
+    const uint16_t pos_in_storage = 4 + (index * (AP_MISSION_EEPROM_COMMAND_SIZE + 2));
 
     PackedContent packed_content {};
 
     const uint8_t b1 = _storage.read_byte(pos_in_storage);
     if (b1 == 0 || b1 == 1) {
         cmd.id = _storage.read_uint16(pos_in_storage+1);
-        cmd.p1 = _storage.read_uint16(pos_in_storage+3);
-        _storage.read_block(packed_content.bytes, pos_in_storage+5, 10);
+        cmd.p1 = _storage.read_uint32(pos_in_storage+3);
+        _storage.read_block(packed_content.bytes, pos_in_storage+7, 14);
         format_conversion(b1, cmd, packed_content);
     } else {
         cmd.id = b1;
-        cmd.p1 = _storage.read_uint16(pos_in_storage+1);
-        _storage.read_block(packed_content.bytes, pos_in_storage+3, 12);
+        cmd.p1 = _storage.read_uint32(pos_in_storage+1);
+        _storage.read_block(packed_content.bytes, pos_in_storage+5, 12);
     }
 
     if (stored_in_location(cmd.id)) {
@@ -875,13 +875,13 @@ bool AP_Mission::write_cmd_to_storage(uint16_t index, const Mission_Command& cmd
     }
 
     // calculate where in storage the command should be placed
-    uint16_t pos_in_storage = 4 + (index * AP_MISSION_EEPROM_COMMAND_SIZE);
+    uint16_t pos_in_storage = 4 + (index * (AP_MISSION_EEPROM_COMMAND_SIZE + 2));
 
     if (cmd.id < 256) {
         // for commands below 256 we store up to 12 bytes
         _storage.write_byte(pos_in_storage, cmd.id);
-        _storage.write_uint16(pos_in_storage+1, cmd.p1);
-        _storage.write_block(pos_in_storage+3, packed.bytes, 12);
+        _storage.write_uint32(pos_in_storage+1, cmd.p1);
+        _storage.write_block(pos_in_storage+5, packed.bytes, 14);
     } else {
         // if the command ID is above 256 we store a tag byte followed
         // by the 16 bit command ID. The tag byte is 1 for commands
@@ -894,8 +894,8 @@ bool AP_Mission::write_cmd_to_storage(uint16_t index, const Mission_Command& cmd
         }
         _storage.write_byte(pos_in_storage, tag_byte);
         _storage.write_uint16(pos_in_storage+1, cmd.id);
-        _storage.write_uint16(pos_in_storage+3, cmd.p1);
-        _storage.write_block(pos_in_storage+5, packed.bytes, 10);
+        _storage.write_uint32(pos_in_storage+3, cmd.p1);
+        _storage.write_block(pos_in_storage+7, packed.bytes, 12);
     }
 
     // remember when the mission last changed
@@ -994,7 +994,17 @@ MAV_MISSION_RESULT AP_Mission::mavlink_int_to_mission_cmd(const mavlink_mission_
         passby = MIN(0xFF,passby);
         acp = MIN(0xFF,acp);
 
-        cmd.p1 = (passby << 8) | (acp & 0x00FF);
+        cmd.p1 = (passby << 8) | (acp & 0x000000FF);
+        
+        uint16_t param1 = packet.param1;
+        uint16_t param4 = packet.param4;
+        param1 = MIN(0xFF, param1);
+        param4 = MIN(0xFF, param4);
+        cmd.p1 = (param1 << 16) | (cmd.p1 & 0x0000FFFF);
+        cmd.p1 = (param4 << 24) | (cmd.p1 & 0x00FFFFFF);
+
+        //gcs().send_text(MAV_SEVERITY_INFO, "NAV_waypoint saved - param1 %i param4 %i", (unsigned)((uint8_t)(((uint32_t)(cmd.p1)) >> 16)), (unsigned)((uint8_t)(((uint32_t)(cmd.p1)) >> 24)));
+        //gcs().send_text(MAV_SEVERITY_INFO, "NAV_waypoint saved - param %i", (unsigned)cmd.p1);
 #else
         // delay at waypoint in seconds (this is for copters???)
         cmd.p1 = packet.param1;
@@ -1515,6 +1525,12 @@ bool AP_Mission::mission_cmd_to_mavlink_int(const AP_Mission::Mission_Command& c
 
         packet.param2 = LOWBYTE(cmd.p1);        // param 2 is acceptance radius in meters is held in low p1
         packet.param3 = HIGHBYTE(cmd.p1);       // param 3 is pass by distance in meters is held in high p1
+
+        packet.param1 = (uint8_t)(((uint32_t)(cmd.p1)) >> 16);
+        packet.param4 = (uint8_t)(((uint32_t)(cmd.p1)) >> 24);
+
+        //gcs().send_text(MAV_SEVERITY_INFO, "NAV_waypoint loaded - param1 %i param4 %i", (unsigned)packet.param4, (unsigned)packet.param4);
+        //gcs().send_text(MAV_SEVERITY_INFO, "NAV_waypoint loaded - param %i", (unsigned)cmd.p1);
 #else
         // delay at waypoint in seconds
         packet.param1 = cmd.p1;

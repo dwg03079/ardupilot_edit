@@ -83,7 +83,7 @@ public:
     // mission item buffer
     static const int mission_cmd_queue_size = 5;
     struct scripting_mission_cmd {
-        uint16_t p1;
+        uint32_t p1;
         float content_p1;
         float content_p2;
         float content_p3;
