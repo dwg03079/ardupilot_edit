@@ -39,6 +39,14 @@ const AP_Param::GroupInfo AP_Nav_G1::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("LIM_BANK",   3, AP_Nav_G1, _loiter_bank_limit, 0.0f),
 
+    // @Param: G_MAX
+    // @DisplayName: Accel scale
+    // @Description: Accel scale
+    // @Units: g
+    // @Range: 2 10
+    // @User: Advanced
+    AP_GROUPINFO("G_MAX",   4, AP_Nav_G1, g_max, 2.0f),
+
     AP_GROUPEND
 };
 
@@ -79,6 +87,8 @@ int32_t AP_Nav_G1::get_yaw_sensor() const
  */
 int32_t AP_Nav_G1::nav_roll_cd(void) const
 {
+    logging();
+    /*
     uint32_t now = AP_HAL::micros();
     AP::logger().WriteStreaming("G1", "TimeUS,h",
         "sm",
@@ -86,6 +96,7 @@ int32_t AP_Nav_G1::nav_roll_cd(void) const
         "Qf",
         now,
         (double)_latAccDem);
+    */
 
     float ret;
     ret = cosf(_ahrs.pitch) * degrees(atanf(_latAccDem * (1.0f / GRAVITY_MSS)) * 100.0f);
@@ -206,6 +217,10 @@ void AP_Nav_G1::_prevent_indecision(float& Nu)
 // update G1 control for waypoint navigation
 void AP_Nav_G1::update_waypoint(const Location& prev_WP, const Location& next_WP, float dist_min)
 {
+    uint16_t turn_before = param1;
+    uint16_t turn_g = param4;
+
+    Vector3f wind = _ahrs.wind_estimate(wind);
 
     Location _current_loc;
     float Nu;
@@ -517,4 +532,21 @@ void AP_Nav_G1::update_level_flight(void)
     _latAccDem = 0;
 
     _data_is_stale = false; // status are correctly updated with current waypoint data
+}
+
+void AP_Nav_G1::set_param_from_cmd(uint32_t param)
+{
+    param1 = (param >> 16) | 0x00FF;
+    param4 = (param >> 24) | 0x00FF;
+}
+
+void AP_Nav_G1::logging(void)
+{
+    uint32_t now = AP_HAL::micros();
+    AP::logger().WriteStreaming("G1", "TimeUS,h",
+        "sm",
+        "F0",
+        "Qf",
+        now,
+        (double)_latAccDem);
 }

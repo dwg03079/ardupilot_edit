@@ -116,6 +116,8 @@ public:
 
     virtual void set_reverse(bool reverse) = 0;
 
+    virtual void set_param_from_cmd(uint32_t param) = 0;
+
     // add new navigation controllers to this enum. Users can then
     // select which navigation controller to use by setting the
     // NAV_CONTROLLER parameter

@@ -621,6 +621,10 @@ bool Plane::verify_takeoff()
  */
 bool Plane::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
+    if (nav_controller == &G1_controller) {
+        nav_controller->set_param_from_cmd(mission._nav_cmd.p1);
+    }
+
     steer_state.hold_course_cd = -1;
 
     // depending on the pass by flag either go to waypoint in regular manner or

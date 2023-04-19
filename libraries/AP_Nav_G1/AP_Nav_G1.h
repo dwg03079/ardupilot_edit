@@ -76,7 +76,7 @@ public:
         _reverse = reverse;
     }
 
-    //void logging(void);
+    void set_param_from_cmd(uint32_t param) override;
 
 private:
     // reference to the AHRS object
@@ -131,4 +131,13 @@ private:
     bool _reverse = false;
     float get_yaw() const;
     int32_t get_yaw_sensor() const;
+
+    uint16_t param1;
+    uint16_t param2;
+    uint16_t param3;
+    uint16_t param4;
+
+    AP_Float g_max;
+
+    void logging(void);
 };
