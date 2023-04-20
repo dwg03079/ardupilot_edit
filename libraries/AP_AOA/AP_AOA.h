@@ -1,16 +1,18 @@
 #pragma once
 
-#include "AP_Airspeed_config.h"
+#include "AP_AOA_config.h"
 
 #include <AP_Param/AP_Param.h>
 #include <AP_Math/AP_Math.h>
+#include <AP_AHRS/AP_AHRS.h>
+#include <AP_Airspeed/AP_Airspeed.h>
 
-class AP_Airspeed_Backend;
+class AP_AOA_Backend;
 
-class AP_Airspeed_Params {
+class AP_AOA_Params {
 public:
     // Constructor
-    AP_Airspeed_Params(void);
+    AP_AOA_Params(void);
 
     // parameters for each instance
     AP_Int32 bus_id;
@@ -27,7 +29,7 @@ public:
 #endif
     AP_Int8  type;
     AP_Int8  bus;
-#if AP_AIRSPEED_AUTOCAL_ENABLE
+#if AP_AOA_AUTOCAL_ENABLE
     AP_Int8  autocal;
 #endif
 
@@ -35,21 +37,21 @@ public:
 };
 
 
-class Airspeed_Calibration {
+class AOA_Calibration {
 public:
-    friend class AP_Airspeed;
+    friend class AP_AOA;
     // constructor
-    Airspeed_Calibration();
+    AOA_Calibration();
 
     // initialise the calibration
     void init(float initial_ratio);
 
-    // take current airspeed in m/s and ground speed vector and return
+    // take current AOA in m/s and ground speed vector and return
     // new scaling factor
-    float update(float airspeed, const Vector3f &vg, int16_t max_airspeed_allowed_during_cal);
+    float update(float AOA, const Vector3f &vg, int16_t max_AOA_allowed_during_cal);
 
 private:
-    // state of kalman filter for airspeed ratio estimation
+    // state of kalman filter for AOA ratio estimation
     Matrix3f P; // covarience matrix
     const float Q0; // process noise matrix top left and middle element
     const float Q1; // process noise matrix bottom right element
@@ -57,13 +59,13 @@ private:
     const float DT; // time delta
 };
 
-class AP_Airspeed
+class AP_AOA
 {
 public:
-    friend class AP_Airspeed_Backend;
+    friend class AP_AOA_Backend;
     
     // constructor
-    AP_Airspeed();
+    AP_AOA(AP_AHRS& ahrs, AP_Airspeed& airspeed);
 
     void set_fixedwing_parameters(const class AP_FixedWing *_fixed_wing_parameters);
 
@@ -71,70 +73,70 @@ public:
     void allocate();
 
 
-    // indicate which bit in LOG_BITMASK indicates we should log airspeed readings
+    // indicate which bit in LOG_BITMASK indicates we should log AOA readings
     void set_log_bit(uint32_t log_bit) { _log_bit = log_bit; }
 
-#if AP_AIRSPEED_AUTOCAL_ENABLE
+#if AP_AOA_AUTOCAL_ENABLE
     // inflight ratio calibration
     void set_calibration_enabled(bool enable) {calibration_enabled = enable;}
-#endif //AP_AIRSPEED_AUTOCAL_ENABLE
+#endif //AP_AOA_AUTOCAL_ENABLE
 
-    // read the analog source and update airspeed
+    // read the analog source and update AOA
     void update(void);
 
-    // calibrate the airspeed. This must be called on startup if the
+    // calibrate the AOA. This must be called on startup if the
     // altitude/climb_rate/acceleration interfaces are ever used
     void calibrate(bool in_startup);
 
-    // return the current airspeed in m/s
-    float get_airspeed(uint8_t i) const;
-    float get_airspeed(void) const { return get_airspeed(primary); }
+    // return the current AOA in m/s
+    float get_AOA(uint8_t i) const;
+    float get_AOA(void) const { return get_AOA(primary); }
 
-    // return the unfiltered airspeed in m/s
-    float get_raw_airspeed(uint8_t i) const;
-    float get_raw_airspeed(void) const { return get_raw_airspeed(primary); }
+    // return the unfiltered AOA in m/s
+    float get_raw_AOA(uint8_t i) const;
+    float get_raw_AOA(void) const { return get_raw_AOA(primary); }
 
-    // return the current airspeed ratio (dimensionless)
-    float get_airspeed_ratio(uint8_t i) const {
+    // return the current AOA ratio (dimensionless)
+    float get_AOA_ratio(uint8_t i) const {
 #ifndef HAL_BUILD_AP_PERIPH
         return param[i].ratio;
 #else
         return 0.0;
 #endif
     }
-    float get_airspeed_ratio(void) const { return get_airspeed_ratio(primary); }
+    float get_AOA_ratio(void) const { return get_AOA_ratio(primary); }
 
     // get temperature if available
     bool get_temperature(uint8_t i, float &temperature);
     bool get_temperature(float &temperature) { return get_temperature(primary, temperature); }
 
-    // set the airspeed ratio (dimensionless)
+    // set the AOA ratio (dimensionless)
 #ifndef HAL_BUILD_AP_PERIPH
-    void set_airspeed_ratio(uint8_t i, float ratio) {
+    void set_AOA_ratio(uint8_t i, float ratio) {
         param[i].ratio.set(ratio);
     }
-    void set_airspeed_ratio(float ratio) { set_airspeed_ratio(primary, ratio); }
+    void set_AOA_ratio(float ratio) { set_AOA_ratio(primary, ratio); }
 #endif
 
-    // return true if airspeed is enabled, and airspeed use is set
+    // return true if AOA is enabled, and AOA use is set
     bool use(uint8_t i) const;
     bool use(void) const { return use(primary); }
 
-    // force disabling of all airspeed sensors
+    // force disabling of all AOA sensors
     void force_disable_use(bool value) {
         _force_disable_use = value;
     }
 
-    // return true if airspeed is enabled
+    // return true if AOA is enabled
     bool enabled(uint8_t i) const;
     bool enabled(void) const { return enabled(primary); }
 
-    // return the differential pressure in Pascal for the last airspeed reading
+    // return the differential pressure in Pascal for the last AOA reading
     float get_differential_pressure(uint8_t i) const;
     float get_differential_pressure(void) const { return get_differential_pressure(primary); }
 
-    // update airspeed ratio calibration
-    void update_calibration(const Vector3f &vground, int16_t max_airspeed_allowed_during_cal);
+    // update AOA ratio calibration
+    void update_calibration(const Vector3f &vground, int16_t max_AOA_allowed_during_cal);
 
     // return health status of sensor
     bool healthy(uint8_t i) const;
@@ -147,24 +149,23 @@ public:
     uint32_t last_update_ms(uint8_t i) const { return state[i].last_update_ms; }
     uint32_t last_update_ms(void) const { return last_update_ms(primary); }
 
-#if AP_AIRSPEED_HYGROMETER_ENABLE
+#if AP_AOA_HYGROMETER_ENABLE
     bool get_hygrometer(uint8_t i, uint32_t &last_sample_ms, float &temperature, float &humidity) const;
 #endif
 
     static const struct AP_Param::GroupInfo var_info[];
 
     enum pitot_tube_order { PITOT_TUBE_ORDER_POSITIVE = 0,
-                            PITOT_TUBE_ORDER_NEGATIVE = 1,
-                            PITOT_TUBE_ORDER_AUTO     = 2 };
+                            PITOT_TUBE_ORDER_NEGATIVE = 1 };
 
     enum OptionsMask {
-        ON_FAILURE_AHRS_WIND_MAX_DO_DISABLE                   = (1<<0),   // If set then use airspeed failure check
-        ON_FAILURE_AHRS_WIND_MAX_RECOVERY_DO_REENABLE         = (1<<1),   // If set then automatically enable the airspeed sensor use when healthy again.
+        ON_FAILURE_AHRS_WIND_MAX_DO_DISABLE                   = (1<<0),   // If set then use AOA failure check
+        ON_FAILURE_AHRS_WIND_MAX_RECOVERY_DO_REENABLE         = (1<<1),   // If set then automatically enable the AOA sensor use when healthy again.
         DISABLE_VOLTAGE_CORRECTION                            = (1<<2),
         USE_EKF_CONSISTENCY                                   = (1<<3),
     };
 
-    enum airspeed_type {
+    enum AOA_type {
         TYPE_NONE=0,
         TYPE_I2C_MS4525=1,
         TYPE_ANALOG=2,
@@ -179,7 +180,7 @@ public:
         TYPE_I2C_DLVR_30IN=11,
         TYPE_I2C_DLVR_60IN=12,
         TYPE_NMEA_WATER=13,
-        TYPE_MSP=14,
+
         TYPE_I2C_ASP5033=15,
         TYPE_SITL=100,
     };
@@ -190,7 +191,7 @@ public:
     // get number of sensors
     uint8_t get_num_sensors(void) const { return num_sensors; }
     
-    static AP_Airspeed *get_singleton() { return _singleton; }
+    static AP_AOA *get_singleton() { return _singleton; }
 
     // return the current corrected pressure, public for AP_Periph
     float get_corrected_pressure(uint8_t i) const;
@@ -198,14 +199,7 @@ public:
         return get_corrected_pressure(primary);
     }
 
-    float get_filtered_pressure(uint8_t i) const;
-    float get_filtered_pressure(void) const {
-        return get_filtered_pressure(primary);
-    }
 
-#if AP_AIRSPEED_MSP_ENABLED
-    void handle_msp(const MSP::msp_airspeed_data_message_t &pkt);
-#endif
 
     enum class CalibrationState {
         NOT_STARTED,
@@ -213,29 +207,35 @@ public:
         SUCCESS,
         FAILED
     };
-    // get aggregate calibration state for the Airspeed library:
+    // get aggregate calibration state for the AOA library:
     CalibrationState get_calibration_state() const;
 
+    float ahrs_AOA() { return _ahrs.getAOA(); }
+
 private:
-    static AP_Airspeed *_singleton;
+
+    AP_AHRS &_ahrs;
+    AP_Airspeed &_airspeed;
+
+    static AP_AOA *_singleton;
 
     AP_Int8 _enable;
     bool lib_enabled() const;
 
     AP_Int8 primary_sensor;
     AP_Int8 max_speed_pcnt;
-    AP_Int32 _options;    // bitmask options for airspeed
+    AP_Int32 _options;    // bitmask options for AOA
     AP_Float _wind_max;
     AP_Float _wind_warn;
     AP_Float _wind_gate;
 
-    AP_Airspeed_Params param[AIRSPEED_MAX_SENSORS];
+    AP_AOA_Params param[AOA_MAX_SENSORS];
 
-    CalibrationState calibration_state[AIRSPEED_MAX_SENSORS];
+    CalibrationState calibration_state[AOA_MAX_SENSORS];
 
-    struct airspeed_state {
-        float   raw_airspeed;
-        float   airspeed;
+    struct AOA_state {
+        float   raw_AOA;
+        float   AOA;
         float	last_pressure;
         float   filtered_pressure;
         float	corrected_pressure;
@@ -251,11 +251,11 @@ private:
             uint16_t read_count;
         } cal;
 
-#if AP_AIRSPEED_AUTOCAL_ENABLE
-        Airspeed_Calibration calibration;
+#if AP_AOA_AUTOCAL_ENABLE
+        AOA_Calibration calibration;
         float last_saved_ratio;
         uint8_t counter;
-#endif // AP_AIRSPEED_AUTOCAL_ENABLE
+#endif // AP_AOA_AUTOCAL_ENABLE
 
         struct {
             uint32_t last_check_ms;
@@ -265,24 +265,24 @@ private:
             uint32_t last_warn_ms;
         } failures;
 
-#if AP_AIRSPEED_HYGROMETER_ENABLE
+#if AP_AOA_HYGROMETER_ENABLE
         uint32_t last_hygrometer_log_ms;
 #endif
-    } state[AIRSPEED_MAX_SENSORS];
+    } state[AOA_MAX_SENSORS];
 
     bool calibration_enabled;
 
-    // can be set to true to disable the use of the airspeed sensor
+    // can be set to true to disable the use of the AOA sensor
     bool _force_disable_use;
 
     // current primary sensor
     uint8_t primary;
     uint8_t num_sensors;
 
-    uint32_t _log_bit = -1;     // stores which bit in LOG_BITMASK is used to indicate we should log airspeed readings
+    uint32_t _log_bit = -1;     // stores which bit in LOG_BITMASK is used to indicate we should log AOA readings
 
     void read(uint8_t i);
-    // return the differential pressure in Pascal for the last airspeed reading for the requested instance
+    // return the differential pressure in Pascal for the last AOA reading for the requested instance
     // returns 0 if the sensor is not enabled
     float get_pressure(uint8_t i);
 
@@ -303,8 +303,8 @@ private:
     }
 
     void update_calibration(uint8_t i, float raw_pressure);
-    void update_calibration(uint8_t i, const Vector3f &vground, int16_t max_airspeed_allowed_during_cal);
-    void send_airspeed_calibration(const Vector3f &vg);
+    void update_calibration(uint8_t i, const Vector3f &vground, int16_t max_AOA_allowed_during_cal);
+    void send_AOA_calibration(const Vector3f &vg);
     // return the current calibration offset
     float get_offset(uint8_t i) const {
 #ifndef HAL_BUILD_AP_PERIPH
@@ -318,11 +318,11 @@ private:
     void check_sensor_failures();
     void check_sensor_ahrs_wind_max_failures(uint8_t i);
 
-    AP_Airspeed_Backend *sensor[AIRSPEED_MAX_SENSORS];
+    AP_AOA_Backend *sensor[AOA_MAX_SENSORS];
 
-    void Log_Airspeed();
+    void Log_AOA();
 
-    bool add_backend(AP_Airspeed_Backend *backend);
+    bool add_backend(AP_AOA_Backend *backend);
     
     const AP_FixedWing *fixed_wing_parameters;
 
@@ -331,5 +331,5 @@ private:
 };
 
 namespace AP {
-    AP_Airspeed *airspeed();
+    AP_AOA *AOA();
 };

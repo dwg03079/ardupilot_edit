@@ -197,7 +197,7 @@ struct PACKED log_ATSC {
     { LOG_AHR2_MSG, sizeof(log_AHRS), \
         "AHR2","QccCfLLffff","TimeUS,Roll,Pitch,Yaw,Alt,Lat,Lng,Q1,Q2,Q3,Q4","sddhmDU????", "FBBB0GG????" , true }, \
     { LOG_AOA_SSA_MSG, sizeof(log_AOA_SSA), \
-        "AOA", "Qff", "TimeUS,AOA,SSA", "sdd", "F00" , true }, \
+        "AHR3", "Qff", "TimeUS,AOA,SSA", "sdd", "F00" , true }, \
     { LOG_ATTITUDE_MSG, sizeof(log_Attitude),\
         "ATT", "QccccCCCCB", "TimeUS,DesRoll,Roll,DesPitch,Pitch,DesYaw,Yaw,ErrRP,ErrYaw,AEKF", "sddddhhdh-", "FBBBBBBBB-" , true }, \
     { LOG_ORGN_MSG, sizeof(log_ORGN), \

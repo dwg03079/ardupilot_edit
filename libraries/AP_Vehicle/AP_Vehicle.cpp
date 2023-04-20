@@ -131,6 +131,12 @@ const AP_Param::GroupInfo AP_Vehicle::var_info[] = {
     AP_SUBGROUPPTR(dds_client, "XRCE_", 18, AP_Vehicle, AP_DDS_Client),
 #endif
 
+#if AP_AOA_ENABLED
+    // @Group: AOA
+    // @Path: ../AP_AOA/AP_AOA.cpp
+    AP_SUBGROUPINFO(angle_of_attack, "AOA", 19, AP_Vehicle, AP_AOA),
+#endif
+
     AP_GROUPEND
 };
 
@@ -228,6 +234,17 @@ void AP_Vehicle::setup()
     }
 #endif
 #endif  // AP_AIRSPEED_ENABLED
+#if AP_AOA_ENABLED
+    angle_of_attack.init();
+    if (angle_of_attack.enabled()) {
+        angle_of_attack.calibrate(true);
+}
+#if APM_BUILD_TYPE(APM_BUILD_ArduPlane)
+    else {
+        GCS_SEND_TEXT(MAV_SEVERITY_WARNING, "No AOA sensor present or enabled");
+    }
+#endif
+#endif  // AP_AOA_ENABLED
 
 #if !APM_BUILD_TYPE(APM_BUILD_Replay)
     SRV_Channels::init();
@@ -378,6 +395,9 @@ const AP_Scheduler::Task AP_Vehicle::scheduler_tasks[] = {
 #endif
 #if AP_AIRSPEED_ENABLED
     SCHED_TASK_CLASS(AP_Airspeed,  &vehicle.airspeed,       update,                   10, 100, 41),    // NOTE: the priority number here should be right before Plane's calc_airspeed_errors
+#endif
+#if AP_AOA_ENABLED
+    SCHED_TASK_CLASS(AP_AOA,  &vehicle.angle_of_attack,       update,                   10, 100, 43),
 #endif
 #if COMPASS_CAL_ENABLED
     SCHED_TASK_CLASS(Compass,      &vehicle.compass,        cal_update,     100, 200, 75),

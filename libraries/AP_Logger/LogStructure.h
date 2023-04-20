@@ -509,6 +509,22 @@ struct PACKED log_ARSP {
     uint8_t primary;
 };
 
+struct PACKED log_AOA {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    uint8_t instance;
+    float   AOA;
+    float   diffpressure;
+    int16_t temperature;
+    float   rawpressure;
+    float   offset;
+    bool    use;
+    bool    healthy;
+    float   health_prob;
+    float   test_ratio;
+    uint8_t primary;
+};
+
 struct PACKED log_MAV_Stats {
     LOG_PACKET_HEADER;
     uint64_t timestamp;
@@ -1249,6 +1265,7 @@ LOG_STRUCTURE_FROM_PRECLAND \
       "RAD", "QBBBBBHH", "TimeUS,RSSI,RemRSSI,TxBuf,Noise,RemNoise,RxErrors,Fixed", "s-------", "F-------", true }, \
 LOG_STRUCTURE_FROM_CAMERA \
     { LOG_ARSP_MSG, sizeof(log_ARSP), "ARSP",  "QBffcffBBffB", "TimeUS,I,Airspeed,DiffPress,Temp,RawPress,Offset,U,H,Hp,TR,Pri", "s#nPOPP-----", "F-00B00-----", true }, \
+    { LOG_AOA_MSG, sizeof(log_AOA), "AOA",  "QBffcffBBffB", "TimeUS,I,Airspeed,DiffPress,Temp,RawPress,Offset,U,H,Hp,TR,Pri", "s#nPOPP-----", "F-00B00-----", true }, \
     LOG_STRUCTURE_FROM_BATTMONITOR \
     { LOG_MAG_MSG, sizeof(log_MAG), \
       "MAG", "QBhhhhhhhhhBI",    "TimeUS,I,MagX,MagY,MagZ,OfsX,OfsY,OfsZ,MOX,MOY,MOZ,Health,S", "s#GGGGGGGGG-s", "F-CCCCCCCCC-F", true }, \
@@ -1421,6 +1438,8 @@ enum LogMessages : uint8_t {
     LOG_RCOUT2_MSG,
     LOG_RCOUT3_MSG,
     LOG_IDS_FROM_FENCE,
+
+    LOG_AOA_MSG,
 
     _LOG_LAST_MSG_
 };

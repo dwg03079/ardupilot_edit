@@ -877,6 +877,13 @@ float AP_Airspeed::get_corrected_pressure(uint8_t i) const {
     return state[i].corrected_pressure;
 }
 
+float AP_Airspeed::get_filtered_pressure(uint8_t i) const {
+    if (!enabled(i)) {
+        return 0.0;
+    }
+    return state[i].filtered_pressure;
+}
+
 #if AP_AIRSPEED_HYGROMETER_ENABLE
 bool AP_Airspeed::get_hygrometer(uint8_t i, uint32_t &last_sample_ms, float &temperature, float &humidity) const
 {

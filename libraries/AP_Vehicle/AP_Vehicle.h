@@ -60,6 +60,8 @@
 #include <AP_CheckFirmware/AP_CheckFirmware.h>
 #include <Filter/LowPassFilter.h>
 
+#include <AP_AOA/AP_AOA.h>
+
 class AP_DDS_Client;
 
 class AP_Vehicle : public AP_HAL::HAL::Callbacks {
@@ -352,6 +354,10 @@ protected:
 
 #if AP_AIRSPEED_ENABLED
     AP_Airspeed airspeed;
+#endif
+
+#if AP_AOA_ENABLED
+    AP_AOA angle_of_attack{ahrs, airspeed};
 #endif
 
 #if AP_AIS_ENABLED

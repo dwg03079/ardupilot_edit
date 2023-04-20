@@ -91,6 +91,8 @@ enum class LogEvent : uint8_t {
     EK3_SOURCES_SET_TO_TERTIARY = 87,
 
     AIRSPEED_PRIMARY_CHANGED = 90,
+    
+    AOA_PRIMARY_CHANGED = 91,
 
     SURFACED = 163,
     NOT_SURFACED = 164,
